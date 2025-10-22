@@ -4,92 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OneStep Engineering Solutions — Invoice</title>
-  <style>
-    
-    :root{
-      --brand:#1465ac;
-      --accent:#e85a0c;
-      --muted:#666
-    }
-    body{
-      font-family:Georgia, 'Times New Roman', serif; 
-      background:#f6f7fb; 
-      margin:20px
-    }
-    .page{
-      max-width:900px;
-      margin:0 auto;
-      background:#fff;
-      padding:24px;border-radius:6px;
-      box-shadow:0 6px 24px rgba(12,20,40,0.08)
-    }
-
-    /* Header */
-    .header{
-      display:flex;
-      align-items:center;
-      gap:20px}
-    .logo{
-      width:2px;
-      height:8px;
-      background:#112e4a;
-      border-radius:2px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      font-weight:700;
-      cursor:pointer
-    }
-    .company{flex:1}
-    .company h1{margin:0;color:var(--brand);letter-spacing:1px}
-    .company p.desc{color:firebrick;text-align:center;margin:12px 0 0;font-size:14px}
-    hr.separator{border:none;border-top:2px solid #ddd;margin:18px 0}
-
-    /* Contact/Invoice To */
-    .top-row{display:flex;justify-content:space-between;gap:20px;margin-bottom:6px;flex-wrap:wrap}
-    .contacts{width:45%}
-    .contacts p{margin:6px 0;color:var(--brand)}
-    .invoice-to{text-align:right;width:45%}
-    .invoice-to label{display:block;color:var(--muted);font-size:13px}
-    .invoice-to input{border:none;border-bottom:1px dashed #ccc;padding:4px 6px;font-size:16px;text-align:right}
-
-    /* Table */
-    table{width:100%;border-collapse:collapse;margin-top:16px}
-    th,td{padding:10px;border:1px solid #e6e6e6;text-align:left}
-    th.right, td.right{text-align:right}
-    input.subtotal{width:100%;box-sizing:border-box;border:0;padding:6px;font-size:14px;text-align:right}
-
-    tfoot td{font-weight:700}
-    .grand{background:#f4f8fb}
-
-    /* Buttons */
-    .controls{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
-    .btn{background:var(--brand);color:#fff;border:none;padding:10px 14px;border-radius:6px;cursor:pointer}
-    .btn.secondary{background:#444}
-
-    /* Print styles */
-    @media print{
-      body{background:white}
-      .controls, .btn{display:none}
-      .page{box-shadow:none;border-radius:0;padding:0}
-    }
-
-    /* responsive */
-    @media (max-width:600px){
-      .header{flex-direction:column;align-items:flex-start}
-      .contacts,.invoice-to{width:100%;text-align:left}
-      .invoice-to input{text-align:left}
-    }
+  <link rel="stylesheet" href="/invoice.css">
   
-  </style>
   
 </head> 
 <body>
   <div class="page">
     <div class="header">
       <div class="logo-section">
-  <img src="lg.jpg" alt="OneStep Engineering Solutions Logo" width="150" height="auto">
+  <img src="/image/lg.jpg" alt="OneStep Engineering Solutions Logo" width="150" height="auto">
 </div>
 
       <div class="company">
@@ -137,113 +60,8 @@
       <button class="btn secondary" id="reset">Reset Amounts</button>
     </div>
   </div>
-
+<script src="/invoice.js"></script>
   <!-- jsPDF library for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <script>
-    const activities = [
-      'PRELIMINARIES',
-      'SUB-STRUCTURE',
-      'COLUMNS AND FIRST FLOOR SLAB',
-      'BRICK LAYING',
-      'FINISHES',
-      'ROOFING AND CEILING',
-      'ELECTRICAL INSTALLATION',
-      'EARTHING SYSTEM',
-      'PLUMBING WORKS',
-      'DRAINAGE SYSTEM',
-      'SANITARY APPLIANCES',
-      'WINDOWS AND DOORS'
-    ];
-const itemsTbody = document.getElementById('items');
-
-    function formatNumber(n){
-      if (isNaN(n) || n===null) return '0.00';
-      return Number(n).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-    }
-
-    function createRow(name, idx){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${name}</td>
-        <td class="right"><input class="subtotal" data-idx="${idx}" value="0.00" /></td>
-        <td class="right"><span class="row-total" id="total-${idx}">0.00</span></td>
-      `;
-      return tr;
-    }
-
-    // populate rows
-    activities.forEach((a,i)=> itemsTbody.appendChild(createRow(a,i)));
-
-    // set today's date and invoice number
-    document.getElementById('invdate').textContent = new Date().toLocaleDateString();
-    document.getElementById('invnum').textContent = 'INV-' + String(Math.floor(Math.random()*900+100));
-
-    // update totals
-    function updateTotals(){
-      let grand = 0;
-      document.querySelectorAll('.subtotal').forEach(input=>{
-        let v = input.value.replace(/,/g,'').trim();
-        let num = parseFloat(v);
-        if (isNaN(num)) num = 0;
-        const idx = input.dataset.idx;
-        document.getElementById('total-' + idx).textContent = formatNumber(num);
-        grand += num;
-      });
-      document.getElementById('grand').textContent = formatNumber(grand);
-    }
-
-    // live formatting and totals
-    document.addEventListener('input', function(e){
-      if (e.target.classList && e.target.classList.contains('subtotal')){
-        let val = e.target.value.replace(/,/g,'');
-        if (isNaN(val) || val === '') val = 0;
-        e.target.value = val;
-        updateTotals();
-      }
-    });
-
-    document.addEventListener('blur', function(e){
-      if (e.target.classList && e.target.classList.contains('subtotal')){
-        let num = parseFloat(e.target.value.replace(/,/g,''));
-        if (isNaN(num)) num = 0;
-        e.target.value = formatNumber(num);
-        updateTotals();
-      }
-    }, true);
-
-    // Print
-    document.getElementById('print').addEventListener('click', ()=>{
-      window.print();
-    });
-
-    // Reset
-    document.getElementById('reset').addEventListener('click', ()=>{
-      if (!confirm('Reset all amounts to 0.00?')) return;
-      document.querySelectorAll('.subtotal').forEach(input=>input.value = '0.00');
-      updateTotals();
-    });
-
-    // Logo drop
-    (function enableLogoDrop(){
-      const logo = document.getElementById('logo');
-      logo.addEventListener('dragover', e=>{e.preventDefault(); logo.style.opacity = 0.8});
-      logo.addEventListener('dragleave', e=>{logo.style.opacity='1'});
-      logo.addEventListener('drop', e=>{
-        e.preventDefault();
-        const f = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (!f) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-          logo.innerHTML = '<img src="'+ev.target.result+'" style="max-width:100%;max-height:80px;object-fit:contain">';
-        };
-        reader.readAsDataURL(f);
-      });
-    })();
-
-    // initialise totals
-    updateTotals();
   
-</script>
-    
